@@ -8,12 +8,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.antlr.v4.runtime.misc.NotNull;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@ToString
 public class Students {
 
     @Id
@@ -27,8 +31,7 @@ public class Students {
     @Email(message = "Email should be valid")
     private String email;
 
-    public Students() {
-    }
+    private Boolean isArchived;
 
     public Students(String firstName, String lastName, String email) {
         this.firstName = firstName;

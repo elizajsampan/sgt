@@ -1,10 +1,12 @@
 package com.studentgradetacker.sgt.model.payload.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class MessageResponse {
 
     private String message;
@@ -14,11 +16,5 @@ public class MessageResponse {
     public MessageResponse(String message) {
         this.message = message;
     }
-
-    public MessageResponse(String message, Integer id) {
-        this.message = message;
-        this.id = id;
-    }
-
 
 }
