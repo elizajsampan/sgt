@@ -17,7 +17,8 @@ public class Grades {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer gradeId;
 
-    @JoinColumn(name = "enrolled_id")
+    @ManyToOne
+    @JoinColumn(name = "enrolled_id", referencedColumnName = "enrolledId", nullable = false)
     private Enrolled enrolled;
 
     private Double prelims;

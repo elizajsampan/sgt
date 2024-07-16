@@ -23,4 +23,6 @@ public class Courses {
     private String courseCode;
 
     private Integer units;
+
+    private Boolean isArchived;
 }

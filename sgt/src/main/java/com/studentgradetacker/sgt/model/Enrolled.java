@@ -1,8 +1,11 @@
 package com.studentgradetacker.sgt.model;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.ManyToAny;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Getter
@@ -17,10 +20,12 @@ public class Enrolled {
     private Integer enrolledId;
 
     @ManyToOne
-    @JoinColumn(name = "enrolled_id")
+    @JoinColumn(name = "student_id", referencedColumnName = "studentId", nullable = false)
     private Students students;
 
-    private Integer courseId;
+    @ManyToOne
+    @JoinColumn(name = "course_id", referencedColumnName = "courseId", nullable = false)
+    private Courses courses;
 
     private Boolean isArchived;
 

@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface GradesRepository extends JpaRepository<Grades, Integer> {
 
-    List<Grades> findAllIsArchivedFalse();
+    List<Grades> findByIsArchivedFalse();
 
-    List<Grades> findAllIsArchivedTrue();
+    List<Grades> findByIsArchivedTrue();
 
     Grades findByGradeId(Integer gradeId);
 
