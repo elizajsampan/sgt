@@ -12,15 +12,18 @@ import java.util.List;
 @Repository
 public interface StudentsRepository extends JpaRepository<Students, Integer> {
 
-    List<Students> findAll();
+    //find all students
+    List<Students> findByIsArchivedFalse();
+
+    //find archived students
+    List<Students> findByIsArchivedTrue();
 
     Students findByStudentId(Integer studentId);
 
-//    @Query("SELECT new com.example.StudentGradesDTO(s.firstName, s.lastName, g.prelims, g.midterms, g.finals, g.finalGrade) " +
-//            "FROM Students s " +
-//            "JOIN s.enrollments e " +
-//            "JOIN e.grades g " +
-//            "WHERE s.studentId = :studentId AND s.isArchived = false AND e.isArchived = false AND g.isArchived = false")
+//    @Query("SELECT s.first_name, s.last_name, c.course_name, g.prelims, g.midterms, g.finals\n" +
+//            "    FROM grades g left join enrolled e on g.enrolled_id = e.enrolled_id\n" +
+//            "    LEFT JOIN courses c on c.course_id = e.course_id\n" +
+//            "    left join students s on s.student_id = e.student_id;")
 //    List<StudentGradesDTO> findStudentGradesByStudentId(@Param("studentId") Integer studentId);
 
 

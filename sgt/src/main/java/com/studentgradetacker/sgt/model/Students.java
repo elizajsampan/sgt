@@ -5,13 +5,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.antlr.v4.runtime.misc.NotNull;
 
 @Entity
 @Getter
@@ -31,11 +28,12 @@ public class Students {
     @Email(message = "Email should be valid")
     private String email;
 
-    private Boolean isArchived;
+    private Boolean isArchived = Boolean.FALSE;
 
     public Students(String firstName, String lastName, String email) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.isArchived = Boolean.FALSE;
     }
 }

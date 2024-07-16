@@ -28,10 +28,10 @@ public class StudentsController {
 
     @GetMapping
     public ResponseEntity<?> getAllStudents() {
-        List<Students> allStudents = studentsRepository.findAll();
+        List<Students> allStudents = studentsRepository.findByIsArchivedFalse();
 
         if (allStudents.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Students not found!"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There are no students"));
         }
 
         return ResponseEntity.ok(allStudents);
@@ -51,6 +51,17 @@ public class StudentsController {
         }
 
         return ResponseEntity.ok(existingStudent);
+    }
+
+    @GetMapping("/students/archived")
+    public ResponseEntity<?> getAllArchivedStudents() {
+        List<Students> allArchivedStudents = studentsRepository.findByIsArchivedTrue();
+
+        if (allArchivedStudents.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There are no archived students"));
+        }
+
+        return ResponseEntity.ok(allArchivedStudents);
     }
 
     @PostMapping("/addStudent")
@@ -99,6 +110,7 @@ public class StudentsController {
         existingStudent.setFirstName(updateStudentRequest.getFirstName());
         existingStudent.setLastName(updateStudentRequest.getLastName());
         existingStudent.setEmail(updateStudentRequest.getEmail());
+        existingStudent.setIsArchived(Boolean.FALSE);
 
         studentsRepository.save(existingStudent);
 
@@ -106,7 +118,21 @@ public class StudentsController {
 
     }
 
-    //to refactor to soft delete
+    //soft delete student record
+    @PutMapping("/students/archive/{id}")
+    public ResponseEntity<?> archiveStudent(@PathVariable Integer id) {
+        Students existingStudent = studentsRepository.findByStudentId(id);
+
+        if (existingStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId +", + id));
+        }
+
+        existingStudent.setIsArchived(Boolean.TRUE);
+
+        return ResponseEntity.ok(new MessageResponse("Student has been archived!"));
+    }
+
+    //hard delete student record
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteStudent(@PathVariable Integer id) {
 
