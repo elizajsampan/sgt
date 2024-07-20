@@ -13,6 +13,8 @@ public class UserRequest {
 
     private String password;
 
+    private String confirmPassword;
+
     private String role;
 
     private String firstName;

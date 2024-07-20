@@ -1,10 +1,10 @@
 package com.studentgradetacker.sgt.controller;
 
-import com.studentgradetacker.sgt.model.Courses;
 import com.studentgradetacker.sgt.model.Users;
 import com.studentgradetacker.sgt.model.payload.request.UserRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
 import com.studentgradetacker.sgt.respository.UsersRepository;
+import com.studentgradetacker.sgt.util.PasswordUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -60,12 +60,21 @@ public class UsersController {
 
     @PostMapping("/user")
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRequest addUserRequest) {
+        String encodedPassword = PasswordUtil.encodePassword(addUserRequest.getPassword());
+        String lowerCaseUserName = addUserRequest.getUserName().toLowerCase();
 
-        if(addUserRequest.getUserName().isEmpty()) {
+        Optional<Users> existingUser = Optional.ofNullable(usersRepository.findByUserName(lowerCaseUserName));
+        if (existingUser.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username already exists"));
+        }
+        if(lowerCaseUserName.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username cannot be empty"));
         }
         if(addUserRequest.getPassword().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Password cannot be empty"));
+        }
+        if (!addUserRequest.getPassword().equals(addUserRequest.getConfirmPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Passwords do not match"));
         }
         if(addUserRequest.getRole().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role cannot be empty"));
@@ -80,8 +89,8 @@ public class UsersController {
         Users user;
         if (addUserRequest.getMiddleName() != null && !addUserRequest.getMiddleName().isEmpty()) {
             user = new Users(
-                    addUserRequest.getUserName(),
-                    addUserRequest.getPassword(),
+                    lowerCaseUserName,
+                    encodedPassword,
                     addUserRequest.getRole(),
                     addUserRequest.getFirstName(),
                     addUserRequest.getMiddleName(),
@@ -89,8 +98,8 @@ public class UsersController {
             );
         } else {
             user = new Users(
-                    addUserRequest.getUserName(),
-                    addUserRequest.getPassword(),
+                    lowerCaseUserName,
+                    encodedPassword,
                     addUserRequest.getRole(),
                     addUserRequest.getFirstName(),
                     addUserRequest.getLastName()
@@ -103,36 +112,61 @@ public class UsersController {
     @PutMapping("/user/{id}")
     public ResponseEntity<?> updateUserDetails(@RequestBody UserRequest updateUserRequest, @PathVariable Integer id) {
         Optional<Users> userOptional = Optional.ofNullable(usersRepository.findByUserId(id));
-        System.out.println(userOptional);
+
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid"));
         }
-        if(updateUserRequest.getUserName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username cannot be empty"));
-        }
-        if(updateUserRequest.getRole().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role cannot be empty"));
-        }
-        if(updateUserRequest.getPassword().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Password cannot be empty"));
-        }
-        if(updateUserRequest.getFirstName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
-        }
-        if(updateUserRequest.getLastName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
+
+        Users user = userOptional.get();
+        if (updateUserRequest.getUserName() != null && !updateUserRequest.getUserName().isEmpty()) {
+            String lowerCaseUserName = updateUserRequest.getUserName().toLowerCase();
+            Optional<Users> existingUser = Optional.ofNullable(usersRepository.findByUserName(lowerCaseUserName));
+            if (existingUser.isPresent() && !existingUser.get().getUserId().equals(id)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username already exists"));
+            }
+            user.setUserName(lowerCaseUserName);
         }
 
-        Users existingUser = userOptional.get();
+        if (updateUserRequest.getRole() != null && !updateUserRequest.getRole().isEmpty()) {
+            user.setRole(updateUserRequest.getRole());
+        }
 
-        existingUser.setUserName(updateUserRequest.getUserName());
-        existingUser.setPassword(updateUserRequest.getPassword());
-        existingUser.setRole(updateUserRequest.getRole());
-        existingUser.setFirstName(updateUserRequest.getFirstName());
-        existingUser.setMiddleName(updateUserRequest.getMiddleName());
-        existingUser.setLastName(updateUserRequest.getLastName());
+        if (updateUserRequest.getFirstName() != null && !updateUserRequest.getFirstName().isEmpty()) {
+            user.setFirstName(updateUserRequest.getFirstName());
+        }
 
-        usersRepository.save(existingUser);
+        if (updateUserRequest.getLastName() != null && !updateUserRequest.getLastName().isEmpty()) {
+            user.setLastName(updateUserRequest.getLastName());
+        }
+
+        if (updateUserRequest.getMiddleName() != null) {
+            user.setMiddleName(updateUserRequest.getMiddleName());
+        }
+
+//        if(updateUserRequest.getUserName().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username cannot be empty"));
+//        }
+//        if(updateUserRequest.getRole().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role cannot be empty"));
+//        }
+//        if(updateUserRequest.getPassword().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Password cannot be empty"));
+//        }
+//        if(updateUserRequest.getFirstName().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
+//        }
+//        if(updateUserRequest.getLastName().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
+//        }
+
+//        user.setUserName(updateUserRequest.getUserName());
+//        user.setPassword(updateUserRequest.getPassword());
+//        user.setRole(updateUserRequest.getRole());
+//        user.setFirstName(updateUserRequest.getFirstName());
+//        user.setMiddleName(updateUserRequest.getMiddleName());
+//        user.setLastName(updateUserRequest.getLastName());
+
+        usersRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User details updated successfully!"));
     }
