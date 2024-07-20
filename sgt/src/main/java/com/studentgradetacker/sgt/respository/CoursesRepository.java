@@ -9,7 +9,9 @@ import java.util.List;
 @Repository
 public interface CoursesRepository extends JpaRepository<Courses, Integer> {
 
-    List<Courses> findAll();
+    List<Courses> findByIsArchivedFalse();
+
+    List<Courses> findByIsArchivedTrue();
 
     Courses findByCourseIdAndIsArchivedFalse(Integer courseId);
 }
