@@ -1,6 +1,7 @@
 package com.studentgradetacker.sgt.respository;
 
-import com.studentgradetacker.sgt.dto.StudentGradesDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO;
 import com.studentgradetacker.sgt.model.Students;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,11 +21,22 @@ public interface StudentsRepository extends JpaRepository<Students, Integer> {
 
     Students findByStudentId(Integer studentId);
 
-//    @Query("SELECT s.first_name, s.last_name, c.course_name, g.prelims, g.midterms, g.finals\n" +
-//            "    FROM grades g left join enrolled e on g.enrolled_id = e.enrolled_id\n" +
-//            "    LEFT JOIN courses c on c.course_id = e.course_id\n" +
-//            "    left join students s on s.student_id = e.student_id;")
-//    List<StudentGradesDTO> findStudentGradesByStudentId(@Param("studentId") Integer studentId);
+    @Query("SELECT new com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO(" +
+            "s.firstName, s.lastName, c.courseDescription, c.courseCode, g.prelims, g.midterms, g.finals, g.finalGrade) " +
+            "FROM Students s " +
+            "JOIN Enrolled e ON s = e.students " +
+            "JOIN Courses c ON e.courses = c " +
+            "JOIN Grades g ON e = g.enrolled " +
+            "WHERE s.studentId = :studentId")
+    List<StudentGradesDTO> findGradesByStudentId(@Param("studentId") Integer studentId);
+
+    @Query("SELECT new com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO(" +
+            "s.studentId, c.courseDescription, c.courseCode, c.units)" +
+            " FROM Students s" +
+            " JOIN Enrolled e ON s = e.students" +
+            " JOIN Courses c ON e.courses = c" +
+            " WHERE s.studentId = :studentId")
+    List<EnrolledStudentDTO> findCoursesEnrolledByStudentId(@Param("studentId") Integer studentId);
 
 
 }

@@ -1,8 +1,11 @@
 package com.studentgradetacker.sgt.controller;
 
+import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO;
 import com.studentgradetacker.sgt.model.Students;
 import com.studentgradetacker.sgt.model.payload.request.StudentRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
+import com.studentgradetacker.sgt.respository.EnrolledRepository;
 import com.studentgradetacker.sgt.respository.StudentsRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/sgt/students")
@@ -37,23 +39,23 @@ public class StudentsController {
         return ResponseEntity.ok(allStudents);
     };
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getStudentByStudentId(@PathVariable Integer id) {
-        if (id == null || id <= 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId +", + id));
+    @GetMapping("/{studentId}")
+    public ResponseEntity<?> getStudentByStudentId(@PathVariable Integer studentId) {
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
         }
 
         // Fetch the student by ID from repository
-        Students existingStudent = studentsRepository.findByStudentId(id);
+        Students existingStudent = studentsRepository.findByStudentId(studentId);
 
         if (existingStudent == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
         }
 
         return ResponseEntity.ok(existingStudent);
     }
 
-    @GetMapping("/students/archived")
+    @GetMapping("/archived")
     public ResponseEntity<?> getAllArchivedStudents() {
         List<Students> allArchivedStudents = studentsRepository.findByIsArchivedTrue();
 
@@ -63,6 +65,51 @@ public class StudentsController {
 
         return ResponseEntity.ok(allArchivedStudents);
     }
+
+    @GetMapping("/{studentId}/grades")
+    public ResponseEntity<?> getStudentGrade(@PathVariable Integer studentId) {
+        if (studentId == null || studentId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+
+        Students existingStudent = studentsRepository.findByStudentId(studentId);
+        if (existingStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+
+        List<EnrolledStudentDTO> enrolledStudent = studentsRepository.findCoursesEnrolledByStudentId(studentId);
+        System.out.println(enrolledStudent);
+        if(enrolledStudent.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " is not enrolled!"));
+        }
+
+        List<StudentGradesDTO> studentGradesDTO = studentsRepository.findGradesByStudentId(studentId);
+        if(studentGradesDTO.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " grades not found"));
+        }
+        return ResponseEntity.ok(studentGradesDTO);
+    }
+
+    @GetMapping("/enrolled/{studentId}")
+    public ResponseEntity<?> getEnrolledCoursesByStudentId(@PathVariable Integer studentId) {
+        if (studentId == null || studentId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+
+        Students existingStudent = studentsRepository.findByStudentId(studentId);
+        if (existingStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+
+        List<EnrolledStudentDTO> enrolledStudent = studentsRepository.findCoursesEnrolledByStudentId(studentId);
+        System.out.println(enrolledStudent);
+        if(enrolledStudent.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " is not enrolled!"));
+        }
+
+        return ResponseEntity.ok(enrolledStudent);
+    }
+
 
     @PostMapping("/addStudent")
     public ResponseEntity<?> addNewStudent(@Valid @RequestBody StudentRequest addStudentRequest, BindingResult bindingResult) {
@@ -90,7 +137,7 @@ public class StudentsController {
         Optional<Students> studentOptional = Optional.ofNullable(studentsRepository.findByStudentId(id));
 
         if (studentOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId +", + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
         }
         if(updateStudentRequest.getFirstName().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
@@ -119,12 +166,12 @@ public class StudentsController {
     }
 
     //soft delete student record
-    @PutMapping("/students/archive/{id}")
+    @PutMapping("/archive/{id}")
     public ResponseEntity<?> archiveStudent(@PathVariable Integer id) {
         Students existingStudent = studentsRepository.findByStudentId(id);
 
         if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId +", + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
         }
 
         existingStudent.setIsArchived(Boolean.TRUE);
@@ -139,7 +186,7 @@ public class StudentsController {
         Students existingStudent = studentsRepository.findByStudentId(id);
 
         if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId +", + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
         }
 
         studentsRepository.delete(existingStudent);

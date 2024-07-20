@@ -10,7 +10,6 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class Grades {
 
     @Id
@@ -29,5 +28,14 @@ public class Grades {
 
     private Double finalGrade;
 
-    private Boolean isArchived;
+    private Boolean isArchived = Boolean.FALSE;
+
+    public Grades(Enrolled enrolled, Double prelims, Double midterms, Double finals, Double finalGrade, Boolean isArchived) {
+        this.enrolled = enrolled;
+        this.prelims = prelims;
+        this.midterms = midterms;
+        this.finals = finals;
+        this.finalGrade = finalGrade;
+        this.isArchived = Boolean.FALSE;
+    }
 }
