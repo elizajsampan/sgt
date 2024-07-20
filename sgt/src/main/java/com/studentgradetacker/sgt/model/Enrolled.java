@@ -12,7 +12,6 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class Enrolled {
 
     @Id
@@ -27,6 +26,11 @@ public class Enrolled {
     @JoinColumn(name = "course_id", referencedColumnName = "courseId", nullable = false)
     private Courses courses;
 
-    private Boolean isArchived;
+    private Boolean isArchived = Boolean.FALSE;
 
+    public Enrolled(Students students, Courses courses, Boolean isArchived) {
+        this.students = students;
+        this.courses = courses;
+        this.isArchived = Boolean.FALSE;
+    }
 }
