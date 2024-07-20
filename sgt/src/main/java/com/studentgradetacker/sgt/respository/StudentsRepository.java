@@ -19,7 +19,9 @@ public interface StudentsRepository extends JpaRepository<Students, Integer> {
     //find archived students
     List<Students> findByIsArchivedTrue();
 
-    Students findByStudentId(Integer studentId);
+    Students findByStudentIdAndIsArchivedFalse(Integer studentId);
+
+    Students findByStudentIdAndIsArchivedTrue(Integer studentId);
 
     @Query("SELECT new com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO(" +
             "s.firstName, s.lastName, c.courseDescription, c.courseCode, g.prelims, g.midterms, g.finals, g.finalGrade) " +

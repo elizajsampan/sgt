@@ -45,7 +45,8 @@ public class CoursesController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Course ID is invalid!"));
         }
 
-        Courses existingCourse = coursesRepository.findByCourseId(id);
+        // Fetch the course by ID from repository
+        Courses existingCourse = coursesRepository.findByCourseIdAndIsArchivedFalse(id);
 
         if (existingCourse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Course not found!"));
