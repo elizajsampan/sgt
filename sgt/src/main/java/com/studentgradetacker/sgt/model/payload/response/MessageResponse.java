@@ -13,10 +13,4 @@ public class MessageResponse {
 
     private String message;
 
-    private Integer id;
-
-    public MessageResponse(String message) {
-        this.message = message;
-    }
-
 }
