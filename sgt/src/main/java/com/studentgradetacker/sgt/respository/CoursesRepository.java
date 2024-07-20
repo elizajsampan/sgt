@@ -11,5 +11,5 @@ public interface CoursesRepository extends JpaRepository<Courses, Integer> {
 
     List<Courses> findAll();
 
-    Courses findByCourseId(Integer courseId);
+    Courses findByCourseIdAndIsArchivedFalse(Integer courseId);
 }

@@ -46,7 +46,7 @@ public class StudentsController {
         }
 
         // Fetch the student by ID from repository
-        Students existingStudent = studentsRepository.findByStudentId(studentId);
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
 
         if (existingStudent == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
@@ -72,7 +72,7 @@ public class StudentsController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
         }
 
-        Students existingStudent = studentsRepository.findByStudentId(studentId);
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
         if (existingStudent == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
         }
@@ -96,7 +96,7 @@ public class StudentsController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
         }
 
-        Students existingStudent = studentsRepository.findByStudentId(studentId);
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
         if (existingStudent == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
         }
@@ -111,8 +111,8 @@ public class StudentsController {
     }
 
 
-    @PostMapping("/addStudent")
-    public ResponseEntity<?> addNewStudent(@Valid @RequestBody StudentRequest addStudentRequest, BindingResult bindingResult) {
+    @PostMapping
+    public ResponseEntity<?> addNewStudent(@Valid @RequestBody StudentRequest addStudentRequest) {
 
         if(addStudentRequest.getFirstName().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
@@ -134,30 +134,40 @@ public class StudentsController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateStudentDetails(@RequestBody StudentRequest updateStudentRequest, @PathVariable Integer id) {
-        Optional<Students> studentOptional = Optional.ofNullable(studentsRepository.findByStudentId(id));
+        Optional<Students> studentOptional = Optional.ofNullable(studentsRepository.findByStudentIdAndIsArchivedFalse(id));
 
         if (studentOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
         }
-        if(updateStudentRequest.getFirstName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
-        }
-        if(updateStudentRequest.getLastName().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
-        }
-        if(updateStudentRequest.getEmail().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email cannot be empty"));
-        }
-        if(!pattern.matcher(updateStudentRequest.getEmail()).matches()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email should be valid"));
-        }
+//        if(updateStudentRequest.getFirstName().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
+//        }
+//        if(updateStudentRequest.getLastName().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
+//        }
+//        if(updateStudentRequest.getEmail().isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email cannot be empty"));
+//        }
+//        if(!pattern.matcher(updateStudentRequest.getEmail()).matches()) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email should be valid"));
+//        }
 
         Students existingStudent = studentOptional.get();
 
-        existingStudent.setFirstName(updateStudentRequest.getFirstName());
-        existingStudent.setLastName(updateStudentRequest.getLastName());
-        existingStudent.setEmail(updateStudentRequest.getEmail());
-        existingStudent.setIsArchived(Boolean.FALSE);
+        if (updateStudentRequest.getFirstName() != null && !updateStudentRequest.getFirstName().isEmpty()) {
+            existingStudent.setFirstName(updateStudentRequest.getFirstName());
+        }
+
+        if (updateStudentRequest.getLastName() != null && !updateStudentRequest.getLastName().isEmpty()) {
+            existingStudent.setLastName(updateStudentRequest.getLastName());
+        }
+
+        if (updateStudentRequest.getEmail() != null && !updateStudentRequest.getEmail().isEmpty()) {
+            if (!pattern.matcher(updateStudentRequest.getEmail()).matches()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email should be valid"));
+            }
+            existingStudent.setEmail(updateStudentRequest.getEmail());
+        }
 
         studentsRepository.save(existingStudent);
 
@@ -166,32 +176,57 @@ public class StudentsController {
     }
 
     //soft delete student record
-    @PutMapping("/archive/{id}")
-    public ResponseEntity<?> archiveStudent(@PathVariable Integer id) {
-        Students existingStudent = studentsRepository.findByStudentId(id);
+    @PutMapping("/archive/{studentId}")
+    public ResponseEntity<?> archiveStudent(@PathVariable Integer studentId) {
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
 
         if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse(
+                            String.format("Student with studentId: %d is not found!", studentId)));
         }
 
         existingStudent.setIsArchived(Boolean.TRUE);
+        studentsRepository.save(existingStudent);
 
-        return ResponseEntity.ok(new MessageResponse("Student has been archived!"));
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Student with studentId: %d has been archived!", studentId)));
     }
 
-    //hard delete student record
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteStudent(@PathVariable Integer id) {
+    @PutMapping("/unarchive/{studentId}")
+    public ResponseEntity<?> unarchiveStudent(@PathVariable Integer studentId) {
 
-        Students existingStudent = studentsRepository.findByStudentId(id);
+        Students archivedStudent = studentsRepository.findByStudentIdAndIsArchivedTrue(studentId);
+
+        if(archivedStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse(
+                            String.format("Student with studentId: %d is not found student in archives", studentId)));
+
+        }
+        archivedStudent.setIsArchived(Boolean.FALSE);
+        studentsRepository.save(archivedStudent);
+
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Student with studentId: %d has been unarchived!", studentId)));
+    }
+
+    //hard delete student record, can only be deleted when archived
+    @DeleteMapping("/{studentId}")
+    public ResponseEntity<?> deleteStudent(@PathVariable Integer studentId) {
+
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedTrue(studentId);
 
         if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse(
+                            String.format("Student with studentId: %d is not found student in archives", studentId)));
         }
 
         studentsRepository.delete(existingStudent);
 
-        return ResponseEntity.ok(new MessageResponse("Student deleted successfully!"));
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Archived student with studentId: %d has been deleted successfully!", studentId)));
 
     }
 }

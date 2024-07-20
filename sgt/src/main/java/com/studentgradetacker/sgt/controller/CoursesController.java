@@ -38,7 +38,7 @@ public class CoursesController {
         }
 
         // Fetch the course by ID from repository
-        Courses existingCourse = coursesRepository.findByCourseId(id);
+        Courses existingCourse = coursesRepository.findByCourseIdAndIsArchivedFalse(id);
 
         if (existingCourse == null) {
             return ResponseEntity.notFound().build();

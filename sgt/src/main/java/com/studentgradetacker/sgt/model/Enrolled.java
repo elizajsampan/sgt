@@ -28,9 +28,10 @@ public class Enrolled {
 
     private Boolean isArchived = Boolean.FALSE;
 
-    public Enrolled(Students students, Courses courses, Boolean isArchived) {
+    public Enrolled(Students students, Courses courses) {
         this.students = students;
         this.courses = courses;
-        this.isArchived = Boolean.FALSE;
+        isArchived = Boolean.FALSE;
     }
+
 }

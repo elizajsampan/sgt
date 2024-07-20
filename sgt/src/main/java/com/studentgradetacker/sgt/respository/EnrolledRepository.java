@@ -15,12 +15,9 @@ public interface EnrolledRepository extends JpaRepository<Enrolled, Integer> {
 
     List<Enrolled> findByIsArchivedTrue();
 
-    Enrolled findByEnrolledId(Integer enrolledId);
+    Enrolled findByEnrolledIdAndIsArchivedFalse(Integer enrolledId);
 
-//    @Query("SELECT s.studentId FROM Students s" +
-//            " JOIN Enrolled e ON s = e.students" +
-//            " WHERE s.studentId = :studentId")
-//    Enrolled findEnrolledByStudentId(@Param("studentId") Integer studentId);
 
+    Enrolled findByEnrolledIdAndIsArchivedTrue(Integer enrolledId);
 
 }
