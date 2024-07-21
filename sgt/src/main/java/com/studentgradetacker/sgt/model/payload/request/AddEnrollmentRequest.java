@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EnrollmentRequest {
+public class AddEnrollmentRequest {
 
     private Integer studentId;
 

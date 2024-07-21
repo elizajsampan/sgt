@@ -1,5 +1,7 @@
 package com.studentgradetacker.sgt.controller;
 
+import com.studentgradetacker.sgt.enums.GradePoint;
+import com.studentgradetacker.sgt.enums.GradeStatus;
 import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Grades;
 import com.studentgradetacker.sgt.model.payload.request.AddGradesRequest;
@@ -86,10 +88,11 @@ public class GradesController {
                 addGradesRequest.getMidterms(),
                 addGradesRequest.getFinals()
         );
+
         gradesRepository.save(grades);
 
         return ResponseEntity.ok(new MessageResponse(
-                String.format("Grades for Enrollee with enrolledId: %d has been added", enrolledId)
+                String.format("Grades for Enrollee with enrolledId: %d have been added", enrolledId)
         ));
     }
 
@@ -97,56 +100,22 @@ public class GradesController {
     public ResponseEntity<?> updateGrades(@RequestBody UpdateGradeRequest updateGradeRequest, @PathVariable Integer gradeId) {
 
         Grades grades = gradesRepository.findByGradeIdAndIsArchivedFalse(gradeId);
-        if(grades == null) {
+        if (grades == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     new MessageResponse(
-                            String.format("There is no grades found for gradeId: %d!", gradeId)));
+                            String.format("There are no grades found for gradeId: %d!", gradeId)));
         }
+        grades.updateGrades(
+                updateGradeRequest.getPrelims(),
+                updateGradeRequest.getMidterms(),
+                updateGradeRequest.getFinals()
+        );
 
-        boolean isUpdated = false;
-        if(updateGradeRequest.getPrelims() != null && !(updateGradeRequest.getPrelims() == 0.0)) {
-            grades.setPrelims(updateGradeRequest.getPrelims());
-            isUpdated = true;
-        }
-        if(updateGradeRequest.getMidterms() != null && !(updateGradeRequest.getMidterms() == 0.0)) {
-            grades.setMidterms(updateGradeRequest.getMidterms());
-            isUpdated = true;
-        }
-        if(updateGradeRequest.getFinals() != null && !(updateGradeRequest.getFinals() == 0.0)) {
-            grades.setFinals(updateGradeRequest.getFinals());
-            isUpdated = true;
-        }
-        if (isUpdated) {
-            double finalGrade = getFinalGrade(grades);
+        gradesRepository.save(grades);
 
-            BigDecimal roundedFinalGrade = BigDecimal.valueOf(finalGrade).setScale(2, RoundingMode.HALF_UP);
-            grades.setFinalGrade(roundedFinalGrade.doubleValue());
-            gradesRepository.save(grades);
-
-            return ResponseEntity.ok(
-                    new MessageResponse(
-                            String.format("Grades updated successfully for gradeId: %d", gradeId)));
-        }
-
-        return ResponseEntity.badRequest().body(new MessageResponse("No valid grades provided to update"));
-
-    }
-
-    private static double getFinalGrade(Grades grades) {
-        double prelims = grades.getPrelims() != null ? grades.getPrelims() : 0.0;
-        double midterms = grades.getMidterms() != null ? grades.getMidterms() : 0.0;
-        double finals = grades.getFinals() != null ? grades.getFinals() : 0.0;
-
-        int count = 0;
-        if (grades.getPrelims() != null) count++;
-        if (grades.getMidterms() != null) count++;
-        if (grades.getFinals() != null) count++;
-
-        double finalGrade = 0.0;
-        if (count > 0) {
-           finalGrade = ((prelims + midterms + finals) / count);
-        }
-        return finalGrade;
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Grades for gradeId: %d have been updated", gradeId)
+        ));
     }
 
     @PutMapping("/archive/{gradeId}")
