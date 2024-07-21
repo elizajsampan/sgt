@@ -30,12 +30,12 @@ public class Grades {
 
     private Boolean isArchived = Boolean.FALSE;
 
-    public Grades(Enrolled enrolled, Double prelims, Double midterms, Double finals, Double finalGrade, Boolean isArchived) {
+    public Grades(Enrolled enrolled, Double prelims, Double midterms, Double finals) {
         this.enrolled = enrolled;
         this.prelims = prelims;
         this.midterms = midterms;
         this.finals = finals;
-        this.finalGrade = finalGrade;
+        this.finalGrade = (prelims + midterms + finals) / 3;
         this.isArchived = Boolean.FALSE;
     }
 }

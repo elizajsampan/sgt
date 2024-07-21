@@ -5,14 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class StudentRequest {
+@NoArgsConstructor
+public class AddGradesRequest {
 
-    private String firstName;
+    private Integer enrolledId;
 
-    private String lastName;
+    private Double prelims;
 
-    private String email;
+    private Double midterms;
 
+    private Double finals;
 }

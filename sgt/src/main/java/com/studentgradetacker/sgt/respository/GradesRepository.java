@@ -1,5 +1,6 @@
 package com.studentgradetacker.sgt.respository;
 
+import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Grades;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,10 @@ public interface GradesRepository extends JpaRepository<Grades, Integer> {
 
     List<Grades> findByIsArchivedTrue();
 
-    Grades findByGradeId(Integer gradeId);
+    Grades findByGradeIdAndIsArchivedFalse(Integer gradeId);
+
+    Grades findByGradeIdAndIsArchivedTrue(Integer gradeId);
+
+    Grades findByEnrolledAndIsArchivedFalse(Enrolled enrolled);
 
 }

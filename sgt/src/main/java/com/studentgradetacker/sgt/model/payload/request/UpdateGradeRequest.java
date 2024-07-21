@@ -7,12 +7,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StudentRequest {
+public class UpdateGradeRequest {
 
-    private String firstName;
+    private Double prelims;
 
-    private String lastName;
+    private  Double midterms;
 
-    private String email;
-
+    private Double finals;
 }
