@@ -62,6 +62,7 @@ public class UsersController {
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRequest addUserRequest) {
         String encodedPassword = PasswordUtil.encodePassword(addUserRequest.getPassword());
         String lowerCaseUserName = addUserRequest.getUserName().toLowerCase();
+        String role = String.valueOf(addUserRequest.getRole()).toUpperCase();
 
         Optional<Users> existingUser = Optional.ofNullable(usersRepository.findByUserName(lowerCaseUserName));
         if (existingUser.isPresent()) {
@@ -79,6 +80,9 @@ public class UsersController {
         if(addUserRequest.getRole().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role cannot be empty"));
         }
+        if (!role.equals("ADMIN") && !role.equals("TEACHER")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role is invalid"));
+        }
         if(addUserRequest.getFirstName().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
         }
@@ -91,7 +95,7 @@ public class UsersController {
             user = new Users(
                     lowerCaseUserName,
                     encodedPassword,
-                    addUserRequest.getRole(),
+                    role,
                     addUserRequest.getFirstName(),
                     addUserRequest.getMiddleName(),
                     addUserRequest.getLastName()
@@ -100,7 +104,7 @@ public class UsersController {
             user = new Users(
                     lowerCaseUserName,
                     encodedPassword,
-                    addUserRequest.getRole(),
+                    role,
                     addUserRequest.getFirstName(),
                     addUserRequest.getLastName()
             );
@@ -127,8 +131,12 @@ public class UsersController {
             user.setUserName(lowerCaseUserName);
         }
 
-        if (updateUserRequest.getRole() != null && !updateUserRequest.getRole().isEmpty()) {
-            user.setRole(updateUserRequest.getRole());
+        if (updateUserRequest.getRole() != null) {
+            String role = String.valueOf(updateUserRequest.getRole()).toUpperCase();
+            if (!role.equals("ADMIN") && !role.equals("TEACHER")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role is invalid"));
+            }
+            user.setRole(role);
         }
 
         if (updateUserRequest.getFirstName() != null && !updateUserRequest.getFirstName().isEmpty()) {
