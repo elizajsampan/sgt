@@ -3,7 +3,7 @@ package com.studentgradetacker.sgt.controller;
 import com.studentgradetacker.sgt.model.Courses;
 import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Students;
-import com.studentgradetacker.sgt.model.payload.request.EnrollmentRequest;
+import com.studentgradetacker.sgt.model.payload.request.AddEnrollmentRequest;
 import com.studentgradetacker.sgt.model.payload.request.UpdateEnrolleeCourseRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
 import com.studentgradetacker.sgt.respository.CoursesRepository;
@@ -61,18 +61,18 @@ public class EnrolledController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addEnrollee(@RequestBody EnrollmentRequest enrollmentRequest) {
+    public ResponseEntity<?> addEnrollee(@RequestBody AddEnrollmentRequest addEnrollmentRequest) {
 
-        Integer studentId = enrollmentRequest.getStudentId();
-        Integer courseId = enrollmentRequest.getCourseId();
+        Integer studentId = addEnrollmentRequest.getStudentId();
+        Integer courseId = addEnrollmentRequest.getCourseId();
         Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
         if(existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no student with studentId: " + enrollmentRequest.getStudentId()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no student with studentId: " + addEnrollmentRequest.getStudentId()));
         }
 
         Courses existingCourse = coursesRepository.findByCourseIdAndIsArchivedFalse(courseId);
         if(existingCourse == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no course with courseId: " + enrollmentRequest.getCourseId()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no course with courseId: " + addEnrollmentRequest.getCourseId()));
         }
 
         Enrolled addEnrollee = new Enrolled(existingStudent, existingCourse);
