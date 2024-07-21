@@ -110,7 +110,6 @@ public class StudentsController {
         return ResponseEntity.ok(enrolledStudent);
     }
 
-
     @PostMapping
     public ResponseEntity<?> addNewStudent(@Valid @RequestBody StudentRequest addStudentRequest) {
 
@@ -139,18 +138,6 @@ public class StudentsController {
         if (studentOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
         }
-//        if(updateStudentRequest.getFirstName().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
-//        }
-//        if(updateStudentRequest.getLastName().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
-//        }
-//        if(updateStudentRequest.getEmail().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email cannot be empty"));
-//        }
-//        if(!pattern.matcher(updateStudentRequest.getEmail()).matches()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email should be valid"));
-//        }
 
         Students existingStudent = studentOptional.get();
 
