@@ -84,6 +84,7 @@ public class Grades {
         if (midterms != null) this.midterms = midterms;
         if (finals != null) this.finals = finals;
         this.finalGrade = calculateFinalGrade(this.prelims, this.midterms, this.finals);
+        this.finalGradePoint = convertToGradePoint(this.finalGrade);
         this.gradeStatus = determineGradeStatus(this.prelims, this.midterms, this.finals);
     }
 }
