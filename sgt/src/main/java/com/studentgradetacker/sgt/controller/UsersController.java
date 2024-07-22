@@ -58,7 +58,7 @@ public class UsersController {
         return ResponseEntity.ok(existingUser);
     }
 
-    @PostMapping("/user")
+    @PostMapping("/user/addUser")
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRequest addUserRequest) {
         String encodedPassword = PasswordUtil.encodePassword(addUserRequest.getPassword());
         String lowerCaseUserName = addUserRequest.getUserName().toLowerCase();

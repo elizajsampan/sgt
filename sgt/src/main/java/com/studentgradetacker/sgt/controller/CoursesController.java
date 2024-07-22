@@ -7,6 +7,7 @@ import com.studentgradetacker.sgt.repository.CoursesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,13 +21,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.List;
 
 @RestController
-@RequestMapping("/sgt")
+@RequestMapping("/sgt/courses")
 public class CoursesController {
 
     @Autowired
     CoursesRepository coursesRepository;
 
-    @GetMapping("/courses")
+    @GetMapping
     public ResponseEntity<?> getAllCourses() {
         List<Courses> allCourses = coursesRepository.findByIsArchivedFalse();
 
@@ -37,7 +38,7 @@ public class CoursesController {
         return ResponseEntity.ok(allCourses);
     }
 
-    @GetMapping("/courses/archived")
+    @GetMapping("/archived")
     public ResponseEntity<?> getAllArchivedCourses() {
         List<Courses> allArchivedCourses = coursesRepository.findByIsArchivedTrue();
 
@@ -48,7 +49,7 @@ public class CoursesController {
         return ResponseEntity.ok(allArchivedCourses);
     }
 
-    @GetMapping("/course/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getCourseByCourseId(@PathVariable Integer id) {
         if (id == null || id <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Course ID is invalid!"));
@@ -64,7 +65,8 @@ public class CoursesController {
         return ResponseEntity.ok(existingCourse);
     }
 
-    @PostMapping("/course")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/addCourse")
     public ResponseEntity<?> addCourse(@RequestBody CourseRequest courseRequest) {
 
         if(courseRequest.getCourseDescription().isEmpty()) {
@@ -87,7 +89,7 @@ public class CoursesController {
 
     }
 
-    @PutMapping("/course/{courseId}")
+    @PutMapping("/{courseId}")
     public ResponseEntity<?> updateCourse(@RequestBody CourseRequest courseRequest, @PathVariable Integer courseId) {
 
         Courses course = coursesRepository.findByCourseIdAndIsArchivedFalse(courseId);
@@ -108,7 +110,7 @@ public class CoursesController {
         return ResponseEntity.ok(new MessageResponse("Course has been updated successfully!"));
     }
 
-    @PutMapping("/course/archive/{id}")
+    @PutMapping("/archive/{id}")
     public ResponseEntity<?> archiveCourse(@PathVariable Integer id) {
         if (id == null || id <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Course ID is invalid!"));
@@ -127,7 +129,7 @@ public class CoursesController {
         return ResponseEntity.ok(new MessageResponse("Course has been archived!"));
     }
 
-    @DeleteMapping("/course/{courseId}")
+    @DeleteMapping("/{courseId}")
     public ResponseEntity<?> deleteCourse(@PathVariable Integer courseId) {
         if (courseId == null || courseId <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Course ID is invalid!"));
