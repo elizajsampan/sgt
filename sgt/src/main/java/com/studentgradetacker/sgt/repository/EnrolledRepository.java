@@ -1,5 +1,7 @@
-package com.studentgradetacker.sgt.respository;
+package com.studentgradetacker.sgt.repository;
 
+import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledCoursesDTO;
+import com.studentgradetacker.sgt.model.Courses;
 import com.studentgradetacker.sgt.model.Enrolled;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,5 +21,15 @@ public interface EnrolledRepository extends JpaRepository<Enrolled, Integer> {
 
 
     Enrolled findByEnrolledIdAndIsArchivedTrue(Integer enrolledId);
+
+    List<Enrolled> findByStudentsStudentId(Integer studentId);
+
+    @Query("SELECT c " +
+            "FROM Students s " +
+            "JOIN Enrolled e ON s = e.students " +
+            "JOIN Courses c ON e.courses = c " +
+            "WHERE s.studentId = :studentId")
+    List<Courses> findEnrolledCoursesByStudentId(@Param("studentId") Integer studentId);
+
 
 }

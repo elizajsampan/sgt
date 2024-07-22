@@ -1,7 +1,8 @@
-package com.studentgradetacker.sgt.respository;
+package com.studentgradetacker.sgt.repository;
 
 import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO;
 import com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO;
+import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Students;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,14 +32,5 @@ public interface StudentsRepository extends JpaRepository<Students, Integer> {
             "JOIN Grades g ON e = g.enrolled " +
             "WHERE s.studentId = :studentId")
     List<StudentGradesDTO> findGradesByStudentId(@Param("studentId") Integer studentId);
-
-    @Query("SELECT new com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO(" +
-            "s.studentId, c.courseDescription, c.courseCode, c.units)" +
-            " FROM Students s" +
-            " JOIN Enrolled e ON s = e.students" +
-            " JOIN Courses c ON e.courses = c" +
-            " WHERE s.studentId = :studentId")
-    List<EnrolledStudentDTO> findCoursesEnrolledByStudentId(@Param("studentId") Integer studentId);
-
 
 }
