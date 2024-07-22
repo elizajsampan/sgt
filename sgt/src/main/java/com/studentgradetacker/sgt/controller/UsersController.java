@@ -3,7 +3,7 @@ package com.studentgradetacker.sgt.controller;
 import com.studentgradetacker.sgt.model.Users;
 import com.studentgradetacker.sgt.model.payload.request.UserRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
-import com.studentgradetacker.sgt.respository.UsersRepository;
+import com.studentgradetacker.sgt.repository.UsersRepository;
 import com.studentgradetacker.sgt.util.PasswordUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

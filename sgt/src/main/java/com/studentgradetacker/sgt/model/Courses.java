@@ -24,5 +24,12 @@ public class Courses {
 
     private Integer units;
 
-    private Boolean isArchived;
+    private Boolean isArchived = Boolean.FALSE;
+
+    public Courses(String courseDescription, String courseCode, Integer units) {
+        this.courseDescription = courseDescription;
+        this.courseCode = courseCode;
+        this.units = units;
+        this.isArchived = Boolean.FALSE;
+    }
 }

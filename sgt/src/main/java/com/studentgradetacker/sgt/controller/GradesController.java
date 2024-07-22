@@ -1,22 +1,26 @@
 package com.studentgradetacker.sgt.controller;
 
-import com.studentgradetacker.sgt.enums.GradePoint;
-import com.studentgradetacker.sgt.enums.GradeStatus;
+import com.studentgradetacker.sgt.dto.custom_DTO.CourseGradeDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO.StudentDetailsDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO_mapper.CourseGradeDTOMapper;
+import com.studentgradetacker.sgt.dto.custom_DTO_mapper.StudentDetailsDTOMapper;
 import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Grades;
+import com.studentgradetacker.sgt.model.Students;
 import com.studentgradetacker.sgt.model.payload.request.AddGradesRequest;
 import com.studentgradetacker.sgt.model.payload.request.UpdateGradeRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
-import com.studentgradetacker.sgt.respository.EnrolledRepository;
-import com.studentgradetacker.sgt.respository.GradesRepository;
+import com.studentgradetacker.sgt.model.payload.response.StudentGradeResponse;
+import com.studentgradetacker.sgt.repository.EnrolledRepository;
+import com.studentgradetacker.sgt.repository.GradesRepository;
+import com.studentgradetacker.sgt.repository.StudentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/sgt/grades")
@@ -27,6 +31,15 @@ public class GradesController {
 
     @Autowired
     EnrolledRepository enrolledRepository;
+
+    @Autowired
+    StudentsRepository studentsRepository;
+
+    @Autowired
+    CourseGradeDTOMapper courseGradeDTOMapper;
+
+    @Autowired
+    StudentDetailsDTOMapper studentDetailsDTOMapper;
 
     @GetMapping
     public ResponseEntity<?> getAllGrades() {
@@ -50,6 +63,25 @@ public class GradesController {
                             String.format("There is no grades found for gradeId: %d!", gradeId)));
         }
         return ResponseEntity.ok(grades);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<?> getGradesByStudentId(@PathVariable Integer studentId) {
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
+        if (existingStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
+        }
+        List<Grades> grades = gradesRepository.findByStudentId(studentId);
+
+        StudentDetailsDTO studentDetailsDTO = studentDetailsDTOMapper.apply(existingStudent);
+
+
+        List<CourseGradeDTO> courseGradeDTOs = grades.stream()
+                .map(courseGradeDTOMapper)
+                .toList();
+
+        return ResponseEntity.ok(new StudentGradeResponse(studentDetailsDTO, courseGradeDTOs));
+
     }
 
     @GetMapping("/archived")

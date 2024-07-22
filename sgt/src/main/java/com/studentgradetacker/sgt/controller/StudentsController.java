@@ -4,14 +4,14 @@ import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO;
 import com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO;
 import com.studentgradetacker.sgt.model.Students;
 import com.studentgradetacker.sgt.model.payload.request.StudentRequest;
+import com.studentgradetacker.sgt.model.payload.response.GwaResponse;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
-import com.studentgradetacker.sgt.respository.EnrolledRepository;
-import com.studentgradetacker.sgt.respository.StudentsRepository;
+import com.studentgradetacker.sgt.repository.StudentsRepository;
+import com.studentgradetacker.sgt.service.StudentsService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +27,9 @@ public class StudentsController {
 
     @Autowired
     StudentsRepository studentsRepository;
+
+    @Autowired
+    StudentsService studentsService;
 
     @GetMapping
     public ResponseEntity<?> getAllStudents() {
@@ -55,6 +58,16 @@ public class StudentsController {
         return ResponseEntity.ok(existingStudent);
     }
 
+    @GetMapping("/{studentId}/gwa")
+    public ResponseEntity<?> getStudentGWA(@PathVariable Integer studentId) {
+        Students student = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
+        Double gwa = studentsService.calculateGWA(studentId);
+        if (gwa == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No GWA found for student.");
+        }
+        return ResponseEntity.ok(new GwaResponse(student, gwa));
+    }
+
     @GetMapping("/archived")
     public ResponseEntity<?> getAllArchivedStudents() {
         List<Students> allArchivedStudents = studentsRepository.findByIsArchivedTrue();
@@ -64,50 +77,6 @@ public class StudentsController {
         }
 
         return ResponseEntity.ok(allArchivedStudents);
-    }
-
-    @GetMapping("/{studentId}/grades")
-    public ResponseEntity<?> getStudentGrade(@PathVariable Integer studentId) {
-        if (studentId == null || studentId == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
-        }
-
-        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
-        if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
-        }
-
-        List<EnrolledStudentDTO> enrolledStudent = studentsRepository.findCoursesEnrolledByStudentId(studentId);
-        System.out.println(enrolledStudent);
-        if(enrolledStudent.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " is not enrolled!"));
-        }
-
-        List<StudentGradesDTO> studentGradesDTO = studentsRepository.findGradesByStudentId(studentId);
-        if(studentGradesDTO.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " grades not found"));
-        }
-        return ResponseEntity.ok(studentGradesDTO);
-    }
-
-    @GetMapping("/enrolled/{studentId}")
-    public ResponseEntity<?> getEnrolledCoursesByStudentId(@PathVariable Integer studentId) {
-        if (studentId == null || studentId == 0) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
-        }
-
-        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
-        if (existingStudent == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
-        }
-
-        List<EnrolledStudentDTO> enrolledStudent = studentsRepository.findCoursesEnrolledByStudentId(studentId);
-        System.out.println(enrolledStudent);
-        if(enrolledStudent.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " is not enrolled!"));
-        }
-
-        return ResponseEntity.ok(enrolledStudent);
     }
 
     @PostMapping

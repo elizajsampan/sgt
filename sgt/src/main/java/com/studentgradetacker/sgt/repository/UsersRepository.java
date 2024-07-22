@@ -1,4 +1,4 @@
-package com.studentgradetacker.sgt.respository;
+package com.studentgradetacker.sgt.repository;
 
 import com.studentgradetacker.sgt.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;

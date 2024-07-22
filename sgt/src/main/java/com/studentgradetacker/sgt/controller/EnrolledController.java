@@ -1,18 +1,30 @@
 package com.studentgradetacker.sgt.controller;
 
+import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledCoursesDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO.StudentDetailsDTO;
+import com.studentgradetacker.sgt.dto.custom_DTO_mapper.EnrolledCoursesDTOMapper;
+import com.studentgradetacker.sgt.dto.custom_DTO_mapper.StudentDetailsDTOMapper;
 import com.studentgradetacker.sgt.model.Courses;
 import com.studentgradetacker.sgt.model.Enrolled;
 import com.studentgradetacker.sgt.model.Students;
 import com.studentgradetacker.sgt.model.payload.request.AddEnrollmentRequest;
 import com.studentgradetacker.sgt.model.payload.request.UpdateEnrolleeCourseRequest;
 import com.studentgradetacker.sgt.model.payload.response.MessageResponse;
-import com.studentgradetacker.sgt.respository.CoursesRepository;
-import com.studentgradetacker.sgt.respository.EnrolledRepository;
-import com.studentgradetacker.sgt.respository.StudentsRepository;
+import com.studentgradetacker.sgt.model.payload.response.StudentEnrolledCoursesResponse;
+import com.studentgradetacker.sgt.repository.CoursesRepository;
+import com.studentgradetacker.sgt.repository.EnrolledRepository;
+import com.studentgradetacker.sgt.repository.StudentsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -28,6 +40,12 @@ public class EnrolledController {
 
     @Autowired
     CoursesRepository coursesRepository;
+
+    @Autowired
+    EnrolledCoursesDTOMapper enrolledCoursesDTOMapper;
+
+    @Autowired
+    StudentDetailsDTOMapper studentDetailsDTOMapper;
 
     @GetMapping
     public ResponseEntity<?> getAllEnrolled(){
@@ -48,6 +66,29 @@ public class EnrolledController {
         }
 
         return ResponseEntity.ok(existingEnrollee);
+    }
+
+    @GetMapping("/courses/{studentId}")
+    public ResponseEntity<?> getEnrolledCoursesByStudentId(@PathVariable Integer studentId) {
+        if (studentId == null || studentId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+
+        Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
+        if (existingStudent == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId " + studentId));
+        }
+        List<Courses> enrolledCourses = enrolledRepository.findEnrolledCoursesByStudentId(studentId);
+        if (enrolledCourses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Student with studentId: " + studentId + " is not enrolled!"));
+        }
+        StudentDetailsDTO studentDetailsDTO = studentDetailsDTOMapper.apply(existingStudent);
+
+        List<EnrolledCoursesDTO> enrolledStudentDTOS = enrolledCourses.stream()
+                .map(enrolledCoursesDTOMapper)
+                .toList();
+
+        return ResponseEntity.ok(new StudentEnrolledCoursesResponse(studentDetailsDTO, enrolledStudentDTOS));
     }
 
     @GetMapping("/archived")
