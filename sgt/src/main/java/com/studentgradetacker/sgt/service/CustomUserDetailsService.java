@@ -2,6 +2,7 @@ package com.studentgradetacker.sgt.service;
 
 import com.studentgradetacker.sgt.model.Users;
 import com.studentgradetacker.sgt.repository.UsersRepository;
+import com.studentgradetacker.sgt.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,15 +15,15 @@ import java.util.ArrayList;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private UsersRepository userRepository;
+    private UsersRepository usersRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Users user = userRepository.findByUserName(username);
+        Users user = usersRepository.findByUserName(username);
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }
-        return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassword(), new ArrayList<>());
+        return new CustomUserDetails(user);
     }
 }

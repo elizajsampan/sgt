@@ -32,10 +32,10 @@ public class SecurityConfig {
                         authorizeRequests
 //                                .requestMatchers("/sgt/students/**").permitAll()
 //                                .requestMatchers("/sgt/courses/**").permitAll()
-//                                .requestMatchers("/sgt/courses/addCourse").hasRole("ADMIN")
+                                .requestMatchers("/sgt/courses/addCourse").hasRole("ADMIN")
 //                                .requestMatchers("/sgt/user/addUser").permitAll()
-//                                .anyRequest().authenticated()
-                                .anyRequest().permitAll()
+                                .anyRequest().authenticated()
+//                                .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults()); // Enable Basic Authentication
 
@@ -44,17 +44,6 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-//        UserDetails admin = User.withUsername("admin")
-//                .password(passwordEncoder.encode("mikan"))
-//                .roles("ADMIN")
-//                .build();
-//
-//        UserDetails teacher = User.withUsername("teacher")
-//                .password(passwordEncoder.encode("teacherpassword"))
-//                .roles("TEACHER")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(admin, teacher);
         return userDetailsService;
     }
 
