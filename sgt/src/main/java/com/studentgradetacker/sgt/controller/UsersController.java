@@ -15,13 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/sgt")
+@RequestMapping("/sgt/users")
 public class UsersController {
 
     @Autowired
     UsersRepository usersRepository;
 
-    @GetMapping("/users")
+    @GetMapping
     public ResponseEntity<?> getAllUsers() {
         List<Users> allUsers = usersRepository.findByIsArchivedFalse();
 
@@ -32,7 +32,7 @@ public class UsersController {
         return ResponseEntity.ok(allUsers);
     }
 
-    @GetMapping("/users/archived")
+    @GetMapping("/archived")
     public ResponseEntity<?> getAllArchivedUsers() {
         List<Users> allArchivedUsers = usersRepository.findByIsArchivedTrue();
 
@@ -43,13 +43,13 @@ public class UsersController {
         return ResponseEntity.ok(allArchivedUsers);
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<?> getUserByUserId(@PathVariable Integer id) {
-        if (id == null || id <= 0) {
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserByUserId(@PathVariable Integer userId) {
+        if (userId == null || userId <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid"));
         }
 
-        Users existingUser = usersRepository.findByUserId(id);
+        Users existingUser = usersRepository.findByUserId(userId);
 
         if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User not found!"));
@@ -58,7 +58,7 @@ public class UsersController {
         return ResponseEntity.ok(existingUser);
     }
 
-    @PostMapping("/user")
+    @PostMapping
     public ResponseEntity<?> addUser(@Valid @RequestBody UserRequest addUserRequest) {
         String encodedPassword = PasswordUtil.encodePassword(addUserRequest.getPassword());
         String lowerCaseUserName = addUserRequest.getUserName().toLowerCase();
@@ -113,9 +113,12 @@ public class UsersController {
         return ResponseEntity.ok(new MessageResponse("User has been added successfully!"));
     }
 
-    @PutMapping("/user/{id}")
-    public ResponseEntity<?> updateUserDetails(@RequestBody UserRequest updateUserRequest, @PathVariable Integer id) {
-        Optional<Users> userOptional = Optional.ofNullable(usersRepository.findByUserId(id));
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> updateUserDetails(@RequestBody UserRequest updateUserRequest, @PathVariable Integer userId) {
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid!"));
+        }
+        Optional<Users> userOptional = Optional.ofNullable(usersRepository.findByUserId(userId));
 
         if (userOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid"));
@@ -125,7 +128,7 @@ public class UsersController {
         if (updateUserRequest.getUserName() != null && !updateUserRequest.getUserName().isEmpty()) {
             String lowerCaseUserName = updateUserRequest.getUserName().toLowerCase();
             Optional<Users> existingUser = Optional.ofNullable(usersRepository.findByUserName(lowerCaseUserName));
-            if (existingUser.isPresent() && !existingUser.get().getUserId().equals(id)) {
+            if (existingUser.isPresent() && !existingUser.get().getUserId().equals(userId)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username already exists"));
             }
             user.setUserName(lowerCaseUserName);
@@ -151,41 +154,18 @@ public class UsersController {
             user.setMiddleName(updateUserRequest.getMiddleName());
         }
 
-//        if(updateUserRequest.getUserName().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Username cannot be empty"));
-//        }
-//        if(updateUserRequest.getRole().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Role cannot be empty"));
-//        }
-//        if(updateUserRequest.getPassword().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Password cannot be empty"));
-//        }
-//        if(updateUserRequest.getFirstName().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Firstname cannot be empty"));
-//        }
-//        if(updateUserRequest.getLastName().isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Lastname cannot be empty"));
-//        }
-
-//        user.setUserName(updateUserRequest.getUserName());
-//        user.setPassword(updateUserRequest.getPassword());
-//        user.setRole(updateUserRequest.getRole());
-//        user.setFirstName(updateUserRequest.getFirstName());
-//        user.setMiddleName(updateUserRequest.getMiddleName());
-//        user.setLastName(updateUserRequest.getLastName());
-
         usersRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User details updated successfully!"));
     }
 
-    @PutMapping("/user/archive/{id}")
-    public ResponseEntity<?> archiveUser(@PathVariable Integer id) {
-        if (id == null || id <= 0) {
+    @PutMapping("/archive/{userId}")
+    public ResponseEntity<?> archiveUser(@PathVariable Integer userId) {
+        if (userId == null || userId <= 0) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid!"));
         }
 
-        Users existingUser = usersRepository.findByUserId(id);
+        Users existingUser = usersRepository.findByUserIdAndIsArchivedFalse(userId);
 
         if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User not found!"));
@@ -196,5 +176,41 @@ public class UsersController {
         usersRepository.save(existingUser);
 
         return ResponseEntity.ok(new MessageResponse("User has been archived!"));
+    }
+
+    @PutMapping("/unarchive/{userId}")
+    public ResponseEntity<?> unarchiveUser(@PathVariable Integer userId) {
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid!"));
+        }
+
+        Users existingUser = usersRepository.findByUserIdAndIsArchivedTrue(userId);
+
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User not found!"));
+        }
+
+        existingUser.setIsArchived(Boolean.FALSE);
+
+        usersRepository.save(existingUser);
+
+        return ResponseEntity.ok(new MessageResponse("User has been removed from archive!"));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable Integer userId) {
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("User ID is invalid!"));
+        }
+        Users user = usersRepository.findByUserIdAndIsArchivedTrue(userId);
+        if(user == null) {
+            return ResponseEntity.ok(new MessageResponse(
+                    String.format("This user with userId: %d is not archived, therefore cannot be deleted!", userId)));
+
+        }
+
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Archived user with userId: %d has been deleted successfully!", userId)));
+
     }
 }

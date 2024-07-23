@@ -1,7 +1,5 @@
 package com.studentgradetacker.sgt.controller;
 
-import com.studentgradetacker.sgt.dto.custom_DTO.EnrolledStudentDTO;
-import com.studentgradetacker.sgt.dto.custom_DTO.StudentGradesDTO;
 import com.studentgradetacker.sgt.model.Students;
 import com.studentgradetacker.sgt.model.payload.request.StudentRequest;
 import com.studentgradetacker.sgt.model.payload.response.GwaResponse;
@@ -60,6 +58,9 @@ public class StudentsController {
 
     @GetMapping("/{studentId}/gwa")
     public ResponseEntity<?> getStudentGWA(@PathVariable Integer studentId) {
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
+        }
         Students student = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
         Double gwa = studentsService.calculateGWA(studentId);
         if (gwa == null) {
@@ -100,12 +101,15 @@ public class StudentsController {
         return ResponseEntity.ok(new MessageResponse("Student has been added successfully!"));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateStudentDetails(@RequestBody StudentRequest updateStudentRequest, @PathVariable Integer id) {
-        Optional<Students> studentOptional = Optional.ofNullable(studentsRepository.findByStudentIdAndIsArchivedFalse(id));
+    @PutMapping("/{studentId}")
+    public ResponseEntity<?> updateStudentDetails(@RequestBody StudentRequest updateStudentRequest, @PathVariable Integer studentId) {
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
+        }
+        Optional<Students> studentOptional = Optional.ofNullable(studentsRepository.findByStudentIdAndIsArchivedFalse(studentId));
 
         if (studentOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + id));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
         }
 
         Students existingStudent = studentOptional.get();
@@ -134,6 +138,9 @@ public class StudentsController {
     //soft delete student record
     @PutMapping("/archive/{studentId}")
     public ResponseEntity<?> archiveStudent(@PathVariable Integer studentId) {
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
+        }
         Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
 
         if (existingStudent == null) {
@@ -151,7 +158,9 @@ public class StudentsController {
 
     @PutMapping("/unarchive/{studentId}")
     public ResponseEntity<?> unarchiveStudent(@PathVariable Integer studentId) {
-
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
+        }
         Students archivedStudent = studentsRepository.findByStudentIdAndIsArchivedTrue(studentId);
 
         if(archivedStudent == null) {
@@ -164,13 +173,15 @@ public class StudentsController {
         studentsRepository.save(archivedStudent);
 
         return ResponseEntity.ok(new MessageResponse(
-                String.format("Student with studentId: %d has been unarchived!", studentId)));
+                String.format("Student with studentId: %d has been removed from archive!", studentId)));
     }
 
     //hard delete student record, can only be deleted when archived
     @DeleteMapping("/{studentId}")
     public ResponseEntity<?> deleteStudent(@PathVariable Integer studentId) {
-
+        if (studentId == null || studentId <= 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("not found student with studentId: " + studentId));
+        }
         Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedTrue(studentId);
 
         if (existingStudent == null) {
