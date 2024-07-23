@@ -59,7 +59,9 @@ public class EnrolledController {
 
     @GetMapping("/{enrolledId}")
     public ResponseEntity<?> getEnrolleeByEnrolledId(@PathVariable Integer enrolledId) {
-
+        if (enrolledId == null || enrolledId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("EnrolledId is invalid"));
+        }
         Enrolled existingEnrollee = enrolledRepository.findByEnrolledIdAndIsArchivedFalse(enrolledId);
         if(existingEnrollee == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no enrollee with enrolledId: " + enrolledId));
@@ -126,7 +128,9 @@ public class EnrolledController {
 
     @PutMapping("/{enrolledId}")
     public ResponseEntity<?> changeEnrolledStudentCourse(@RequestBody UpdateEnrolleeCourseRequest updateEnrolleeCourseRequest, @PathVariable Integer enrolledId) {
-
+        if (enrolledId == null || enrolledId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("EnrolledId is invalid"));
+        }
         Integer courseId = updateEnrolleeCourseRequest.getCourseId();
         Enrolled existingEnrollee = enrolledRepository.findByEnrolledIdAndIsArchivedFalse(enrolledId);
         if(existingEnrollee == null) {
@@ -152,9 +156,13 @@ public class EnrolledController {
 
     @PutMapping("/archive/{enrolledId}")
     public ResponseEntity<?> archiveEnrolled(@PathVariable Integer enrolledId) {
+        if (enrolledId == null || enrolledId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("EnrolledId is invalid"));
+        }
         Enrolled existingEnrollee = enrolledRepository.findByEnrolledIdAndIsArchivedFalse(enrolledId);
         if(existingEnrollee == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no enrollee with enrolledId: " + enrolledId));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(
+                    String.format("Enrollee with enrolledId: %d ", enrolledId)));
         }
 
         existingEnrollee.setIsArchived(Boolean.TRUE);
@@ -163,9 +171,29 @@ public class EnrolledController {
                 String.format("Enrollee with enrolledId: %d has been archived!", enrolledId)));
     }
 
+    @PutMapping("/unarchive/{enrolledId}")
+    public ResponseEntity<?> unarchiveEnrolled(@PathVariable Integer enrolledId) {
+        if (enrolledId == null || enrolledId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("EnrolledId is invalid"));
+        }
+        Enrolled existingEnrollee = enrolledRepository.findByEnrolledIdAndIsArchivedTrue(enrolledId);
+        if(existingEnrollee == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse(
+                            String.format("Enrollee with enrolledId: %d is not archived", enrolledId)));
+        }
+
+        existingEnrollee.setIsArchived(Boolean.FALSE);
+        enrolledRepository.save(existingEnrollee);
+        return ResponseEntity.ok(new MessageResponse(
+                String.format("Enrollee with enrolledId: %d has been removed from archive!", enrolledId)));
+    }
+
     @DeleteMapping("/{enrolledId}")
     public ResponseEntity<?> deleteEnrollee(@PathVariable Integer enrolledId) {
-
+        if (enrolledId == null || enrolledId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("EnrolledId is invalid"));
+        }
         Enrolled archivedEnrollee = enrolledRepository.findByEnrolledIdAndIsArchivedTrue(enrolledId);
         if (archivedEnrollee == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("There is no archived enrollee with enrolledId: " + enrolledId));

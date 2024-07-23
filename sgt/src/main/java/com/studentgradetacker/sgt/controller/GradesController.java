@@ -55,6 +55,10 @@ public class GradesController {
 
     @GetMapping("/{gradeId}")
     public ResponseEntity<?> getGradeByGradeId(@PathVariable Integer gradeId) {
+        if (gradeId == null || gradeId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("GradeId is invalid"));
+        }
         Grades grades = gradesRepository.findByGradeIdAndIsArchivedFalse(gradeId);
 
         if(grades == null) {
@@ -67,11 +71,19 @@ public class GradesController {
 
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getGradesByStudentId(@PathVariable Integer studentId) {
+        if (studentId == null || studentId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("StudentId is invalid"));
+        }
         Students existingStudent = studentsRepository.findByStudentIdAndIsArchivedFalse(studentId);
         if (existingStudent == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Student not found");
         }
         List<Grades> grades = gradesRepository.findByStudentId(studentId);
+        if (grades == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("Grades not found"));
+        }
 
         StudentDetailsDTO studentDetailsDTO = studentDetailsDTOMapper.apply(existingStudent);
 
@@ -130,7 +142,10 @@ public class GradesController {
 
     @PutMapping("/{gradeId}")
     public ResponseEntity<?> updateGrades(@RequestBody UpdateGradeRequest updateGradeRequest, @PathVariable Integer gradeId) {
-
+        if (gradeId == null || gradeId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("GradeId is invalid"));
+        }
         Grades grades = gradesRepository.findByGradeIdAndIsArchivedFalse(gradeId);
         if (grades == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -152,7 +167,10 @@ public class GradesController {
 
     @PutMapping("/archive/{gradeId}")
     public ResponseEntity<?> archiveGrade(@PathVariable Integer gradeId) {
-
+        if (gradeId == null || gradeId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("GradeId is invalid"));
+        }
         Grades grades = gradesRepository.findByGradeIdAndIsArchivedFalse(gradeId);
         if(grades == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -168,8 +186,32 @@ public class GradesController {
                         String.format("Grades has been archived successfully for gradeId: %d", gradeId)));
     }
 
+    @PutMapping("/unarchive/{gradeId}")
+    public ResponseEntity<?> unarchiveGrade(@PathVariable Integer gradeId) {
+        if (gradeId == null || gradeId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("GradeId is invalid"));
+        }
+        Grades grades = gradesRepository.findByGradeIdAndIsArchivedTrue(gradeId);
+        if(grades == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse(
+                            String.format("There is no archived grades found for gradeId: %d!", gradeId)));
+        }
+
+        grades.setIsArchived(Boolean.FALSE);
+        gradesRepository.save(grades);
+
+        return ResponseEntity.ok(
+                new MessageResponse("Grades has been removed from archive!"));
+    }
+
     @DeleteMapping("/{gradeId}")
     public ResponseEntity<?> deleteGrade(@PathVariable Integer gradeId) {
+        if (gradeId == null || gradeId == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new MessageResponse("GradeId is invalid"));
+        }
         Grades grades = gradesRepository.findByGradeIdAndIsArchivedTrue(gradeId);
         if(grades == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -178,8 +220,7 @@ public class GradesController {
         }
         gradesRepository.delete(grades);
         return ResponseEntity.ok(
-                new MessageResponse(
-                        String.format("Grades has been deleted successfully for gradeId: %d", gradeId)));
+                new MessageResponse("Archived grades has been deleted successfully"));
 
     }
 }

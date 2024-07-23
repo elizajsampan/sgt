@@ -15,5 +15,9 @@ public interface UsersRepository extends JpaRepository<Users, Integer> {
 
     Users findByUserId(Integer userId);
 
+    Users findByUserIdAndIsArchivedFalse(Integer userId);
+
+    Users findByUserIdAndIsArchivedTrue(Integer userId);
+
     Users findByUserName(String userName);
 }
